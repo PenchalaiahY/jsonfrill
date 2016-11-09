@@ -25,19 +25,19 @@
 }
 
 .jf-string {
-  color: #1b9bff;
+  color: #C6B22B;
 }
 
 .jf-number {
-  color: green;
+  color: #5C8A49;
 }
 
 .jf-date {
-  color: blue;
+  color: #CD5665;
 }
 
 .jf-boolean {
-  color: #orange;
+  color: #CC6218;
 }
 
 #jf-formattedJSON .jf-collapsible-title .jf-key, #jf-formattedJSON .jf-parent-brace, #jf-formattedJSON .jf-clickable{
