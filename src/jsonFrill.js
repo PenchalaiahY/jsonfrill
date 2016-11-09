@@ -14,7 +14,8 @@
         jf.settings = $.extend({
             collapse: false,
             toolbar: false,
-            tabSize: 2
+            tabSize: 2,
+            clickablePrimitives: {}
         }, options);
 
         var _indentationLevel = 1,
@@ -36,12 +37,22 @@
             TAB_SIZE = new Array(jf.settings.tabSize > 0 ? jf.settings.tabSize : 0).join(' '),
             SPACES = addSpaces(_indentationLevel);
 
-        function processPrimitive(key, value, type) {
-            return '<div class="jf-prop jf-item ' + collapsedClass + ' " >' + getKey(key) + seperator + '<span class="jf-value jf-' + type +'">' + value + '</span></div>';
+        function processPrimitive(key, value, type, path) {
+            if(jf.settings.clickablePrimitives[path] != undefined) {
+              console.log(path);
+              console.log(jf.settings.clickablePrimitives[path]);
+              return '<div class="jf-prop jf-item ' + collapsedClass + ' " >'
+                + getKey(key) + seperator + '<span class="jf-value jf-' + type +' jf-clickable ' + path.replace(/\./g,"-") + '">' + value + '</span></div>';
+            } else {
+              return '<div class="jf-prop jf-item ' + collapsedClass + ' " >'
+                + getKey(key) + seperator + '<span class="jf-value jf-' + type +'">' + value + '</span></div>';
+            }
+
+
         }
 
         function addSpaces(level) {
-            return '<span class="jf-spaces">' + new Array(level + 1).join("| " + TAB_SIZE) + '</span>';
+            return '<span class="jf-spaces">' + new Array(level + 1).join(" " + TAB_SIZE) + '</span>';
         }
 
         function getKey(key, jfClass) {
@@ -51,10 +62,10 @@
             return '<span class="jf-key">' + SPACES + key + '</span>';
         }
 
-        function processNonPrimitive(openBrace, closeBrace, key, value) {
+        function processNonPrimitive(openBrace, closeBrace, key, value,path, parentType) {
             var temp = "";
             SPACES = addSpaces(++_indentationLevel);
-            temp = process(value);
+            temp = process(value,path,parentType);
             SPACES = addSpaces(--_indentationLevel);
             if(temp) {
                 temp = getKey(key, "jf-collapsible-title") + seperator + openBrace + $ellipses + lineBreak + temp + SPACES + closeBrace;
@@ -64,17 +75,21 @@
             return '<div class="jf-collapsible jf-item '+ collapsedClass +' ">'+temp+'</div>';
         }
 
-        function process(obj) {
+        function process(obj,path,parentType) {
             var str = "";
             if($.isEmptyObject(obj)) {
                 return false;
             }
+            var actualPath = path;
             for (var key in obj) {
                 var type = $.type(obj[key]);
+                if(parentType == "object" || parentType != "array") {
+                  path = path!=""?  actualPath + "." + key : key;
+                }
                 if(type == "object" || type == "array") {
-                    str += processNonPrimitive(braces[type].open, braces[type].close, escape(key), obj[key]);
+                    str += processNonPrimitive(braces[type].open, braces[type].close, escape(key), obj[key],path,type);
                 } else {
-                    str += processPrimitive(escape(key), ($.type(obj[key]) === "string" ? escape(obj[key]) : obj[key]), type);
+                    str += processPrimitive(escape(key), ($.type(obj[key]) === "string" ? escape(obj[key]) : obj[key]), type,path);
                 }
             }
             return str;
@@ -131,7 +146,12 @@
             if(jf.settings.collapse) {
                 elements.formattedJSON.children('.jf-ellipses').show();
             }
-
+            for(var key in jf.settings.clickablePrimitives) {
+              console.log($("div#jf-formattedJSON ." + key.replace(/\./g,"-")));
+              $("div#jf-formattedJSON ." + key.replace(/\./g,"-")).on("click", function() {
+                jf.settings.clickablePrimitives[key].click($(this).text());
+              });
+            }
         }
 
         function toolBar(collapseAll) {
@@ -160,7 +180,7 @@
                 }
                 $(this).html(jsonSource);
             }
-            var str = process(json), type = $.type(json);
+            var path = "", type = $.type(json), str = process(json,path,type);
             if(str) {
                 SPACES = addSpaces(--_indentationLevel);
                 var formattedJSON = '<div id="jf-formattedJSON" class="jf-collapsible">'+
