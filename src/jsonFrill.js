@@ -38,9 +38,8 @@
             SPACES = addSpaces(_indentationLevel);
 
         function processPrimitive(key, value, type, path) {
+            // checking clickable primitive or not.
             if(jf.settings.clickablePrimitives[path] != undefined) {
-              console.log(path);
-              console.log(jf.settings.clickablePrimitives[path]);
               return '<div class="jf-prop jf-item ' + collapsedClass + ' " >'
                 + getKey(key) + seperator + '<span class="jf-value jf-' + type +' jf-clickable ' + path.replace(/\./g,"-") + '">' + value + '</span></div>';
             } else {
@@ -52,7 +51,7 @@
         }
 
         function addSpaces(level) {
-            return '<span class="jf-spaces">' + new Array(level + 1).join(" " + TAB_SIZE) + '</span>';
+            return '<span class="jf-spaces">' + new Array(level + 1).join("| " + TAB_SIZE) + '</span>';
         }
 
         function getKey(key, jfClass) {
@@ -146,8 +145,8 @@
             if(jf.settings.collapse) {
                 elements.formattedJSON.children('.jf-ellipses').show();
             }
+            // adding click events
             for(var key in jf.settings.clickablePrimitives) {
-              console.log($("div#jf-formattedJSON ." + key.replace(/\./g,"-")));
               $("div#jf-formattedJSON ." + key.replace(/\./g,"-")).on("click", function() {
                 jf.settings.clickablePrimitives[key].click($(this).text());
               });
